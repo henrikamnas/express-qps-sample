@@ -61,7 +61,7 @@ app.use(express.static( path.join(__dirname, '../public') ))
  * Default route
  */
 app.get('/', function(req, res) {
-    // Request a ticket, in this case a for a hardcoded user
+    // Request a ticket, in this case for a hardcoded user
     getQlikSenseTicket('hardcoded', 'testuser', function(err, ticket) {
         if(!err) {
             // If we got a ticket render template
