@@ -5,6 +5,11 @@ const path = require('path');
 const fs = require('fs');
 const request = require('request');
 
+
+/**
+ * Our Qlik Sense Server information
+ * Needs exported certificates from Qlik Sense QMC
+ */
 var r = request.defaults({
     rejectUnauthorized: false,
     host: 'localhost',
@@ -12,24 +17,10 @@ var r = request.defaults({
     key: fs.readFileSync(__dirname + '/client_key.pem')
 })
 
-var app = express();
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-console.log( path.join(__dirname, '../public')  )
-
-app.use(express.static( path.join(__dirname, '../public') ))
-
-app.get('/', function(req, res) {
-    getQlikSenseTicket('hardcoded', 'testuser', function(err, ticket) {
-        if(!err) {
-            res.render('index', { 'ticket': ticket });
-        }
-    })
-});
-
-
+/**
+ * Request ticket from QPS.
+ * Adjust uri as needed.
+ */
 function getQlikSenseTicket(directory, user, callback) {    
     r.post({
         uri: 'https://localhost:4243/qps/ticket?xrfkey=abcdefghijklmnop',
@@ -49,5 +40,37 @@ function getQlikSenseTicket(directory, user, callback) {
         callback(null, ticket);       
     });
 };
- 
+
+/**
+ * Express settings
+ */
+var app = express();
+
+/**
+ * Views configuration
+ */
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
+/**
+ * Static resources, i.e our page assets
+ */
+app.use(express.static( path.join(__dirname, '../public') ))
+
+/**
+ * Default route
+ */
+app.get('/', function(req, res) {
+    // Request a ticket, in this case a for a hardcoded user
+    getQlikSenseTicket('hardcoded', 'testuser', function(err, ticket) {
+        if(!err) {
+            // If we got a ticket render template
+            res.render('index', { 'ticket': ticket });
+        } else {
+            // handle error
+        }
+    })
+});
+
+// Start server
 app.listen(8080)
